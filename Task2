@@ -1,0 +1,79 @@
+%*****      MONTE CARLO SIMULATION IN INVENTORY MANAGEMENT          *****
+%**                              TASK 2                                **
+%****CODE STRUCTURE and INSTRUCTIONS // Step by Step//  ****
+% I. Assign y=3 and r=2
+% II.Calculate cost for the 52 weeks
+% III.Apply it 500 times(Stage of appliying MC)
+% IV.Calculate the mean and variance of cost
+
+%DEFINITIONS:
+  % Demand_d=demand
+  % D=given possible demands ([0,1,2,3,4,5,6])
+  % probability= given probability ([0.04, 0.08, 0.28, 0.4,0.16,0.02,0.02])
+  % total_apple=number of total apple
+  % r=minimum stock
+  % y=minimum order number
+  % total_cost=total cost
+  % initial cost,demand and total apple numbe will be zero for week=0 
+estimates=1;
+while estimates<500 %Do it 500 times (Stage of appliying MC)
+    estimates=estimates+1; % 500 estimates
+    probability=[0.04, 0.08, 0.28, 0.4,0.16,0.02,0.02];     %Probability distribution of the demand
+    D=[0,1,2,3,4,5,6];                                      %given possible demands
+    r=2;                %fix min stock number
+    y=3;                %fix order number
+    
+    cost=0;                                                 %initial cost = zero
+    Demand_d=zeros(53,1);                                   %initial demand = zero
+    total_apple=zeros(53,1);                                %initial apple number = zero
+    demand=randsrc(52,1,[D;probability]);                   %random demands according to their possiblities for 52 week
+    Demand_d(2:53,1)=demand;                                %first week = zero // zero was assigned from 2 to 53 week 
+    week=1;           
+    
+      while week<53                                            %loop for 52 week
+            week=week+1;                                       %loop for 52 week
+            total_apple(1)=0;                                  %initial apple number=zero
+        
+             %Check total numbers of apple in the end of the each week
+             if total_apple(week)<Demand_d(week) %if we don't meet customer demands in this week,we will pay 20 gold penalty
+                cost=cost+20;
+                total_apple(week)=0;% if you don't meet demand you will have zero apple
+             else
+                 
+             total_apple(week)=total_apple(week)-Demand_d(week); %total number of apple at the end of the week
+             end
+             cost=cost+total_apple(week)*5; % cost of warehouse cost 5 gold per unit per weekend
+        
+             %for next week order
+             if total_apple(week)<=r % check you are under stock level or not
+                total_apple(week+1)=total_apple(week)+y; %if under order y apple for next week
+             end
+      end
+    
+    cost=cost+total_apple(53)*10-total_apple(53)*5;%(last week we dont have warehouse cost but we have return cost )
+    total_cost(estimates)=cost;%calculate final cost at the end of the 52 weeks
+    
+end
+%******************************FIRST GRAPH*********************************
+nbins=10;
+histogram(total_cost,nbins)%draw histogram for 500 estimates
+xlabel('Cost Values','FontAngle','italic','FontSize',10,'Color','r'); ylabel('Estimation','FontAngle','italic','FontSize',10,'Color','r');
+title('Total Cost For Chosen y=3 and r=2 with 500 Estimations','FontAngle','italic','FontSize',10,'Color','r');
+hold on
+
+%*****************************Normal Distribution*********************************
+%Genereta normal distribution with special mean and variance
+Z=2.58;% 99% confidence level
+M=mean(total_cost);% calculate mean
+S=std(total_cost);%calculate standart derivation
+lower_bound=M-Z*S/sqrt(500);%lower confidence interval
+upper_bound=M+Z*S/sqrt(500);%upper confidence interval
+
+x = [linspace(M-5*S,lower_bound),linspace(lower_bound,upper_bound),linspace(upper_bound,M+5*S)];
+pd = makedist('Normal',M,S);
+den_func_x =pdf(pd,x);% represent densitiy function
+y=25000*den_func_x; % scaling normal distribution with cost in the same y - axis 
+
+plot(x,y,'k:','LineWidth',3)% draw the normal distribution
+legend('Cost','Normal Distribution');
+legend('Location','northwest');
