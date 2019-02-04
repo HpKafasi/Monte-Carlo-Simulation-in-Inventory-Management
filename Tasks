@@ -1,0 +1,23 @@
+Task 1: What would be the reasonable range of the order number 𝑦𝑦 and re-order stock level 𝑟𝑟? 
+Without using simulation, what would you choose for the order number 𝑦𝑦 and re-order stock level 𝑟𝑟?
+Please explain your reason(s).
+
+
+Task 2: For your chosen order number 𝑦𝑦 and re-order stock level 𝑟𝑟, use Monte Carlo simulation to estimate your expected total cost
+over the 52 weeks. Please generate 500 estimates of the total cost. What is the sample mean and variance of your estimate? 
+Use a histogram to visualize your result.
+
+
+Task 3: Instead of choosing order number 𝑦𝑦 and re-order stock level 𝑟𝑟 by intuition, use the Monte Carlo simulation method to find 
+the combination of 𝑦𝑦 and 𝑟𝑟 that will lead to the minimum total cost.
+Is this choice the same as that arrived at by intuition? Please explain why they are (or not) the same.
+
+
+Task 4: How confident are you about your conclusion in Task 3? Can you describe this mathematically?
+How would you improve your confidence level? Evidence this.
+
+
+
+Task 5: Critically evaluate your work. Have you achieved the objectives? What problems did you find during this work?
+What conclusions can you draw from your design? How would you improve your estimate/design?
+From the experience of this work, what do you need to consider when solving a practical problem?
