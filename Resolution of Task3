@@ -1,0 +1,123 @@
+%*****      MONTE CARLO SIMULATION IN INVENTORY MANAGEMENT          *****
+%**                              TASK 2                                **
+%****       CODE STRUCTURE and INSTRUCTIONS // Step by Step//        ****
+%a. Consider all posible y and r combination
+%b. Calculate cost for 52 week for each combination
+%c. Calculate the min cost combination for y and r combinations
+%d. Loop (500 times)
+%e. Note the mean of y,r and cost with table
+%f. Check means (between the upper and lower bound) with regard to confidence intervals
+%g. Recommend a combination 
+
+%DEFINITIONS:
+  % Demand_d=demand
+  % D=given possible demands ([0,1,2,3,4,5,6])
+  % probability= given probability ([0.04, 0.08, 0.28, 0.4,0.16,0.02,0.02])
+  % total_apple=number of total apple
+  % r=minimum stock
+  % y=minimum order number
+  % total_cost=total cost
+  % initial cost,demand and total apple numbe will be zero for week=0 
+
+clear all  
+i=1;        %starting index of matrix
+estimates=1;
+while estimates<500 %Do it 500 times (Stage of appliying MC)
+    estimates=estimates+1;
+    for y=0:1:6             %To observe all value for y
+        for r=0:1:6         %To observe all value for r
+        probability=[0.04, 0.08, 0.28, 0.4,0.16,0.02,0.02];     %Probability distribution of the demand
+        D=[0,1,2,3,4,5,6];                                      %given possible demands
+        cost=0;                                                 %initial cost = zero
+        Demand_d=zeros(53,1);                                   %initial demand = zero
+        total_apple=zeros(53,1);                                %initial apple number = zero
+        demand=randsrc(52,1,[D;probability]);                   %random demands according to their possiblities for 52 week
+        Demand_d(2:53,1)=demand;                                %first week = zero // zero was assigned from 2 to 53 week 
+        week=1;
+            while week<53                                           %loop for 52 week
+                week=week+1;
+                total_apple(1)=0;                                   %initial apple number=zero
+        
+                %Check total numbers of apple in the end of the each week
+                if total_apple(week)<Demand_d(week) %if we don't meet customer demands in this week,we will pay 20 gold penalty
+                    cost=cost+20;
+                    total_apple(week)=0;% if you don't meet demand you will have zero apple
+                else
+                 
+                    total_apple(week)=total_apple(week)-Demand_d(week); %total number of apple at the end of the week
+                end
+                cost=cost+total_apple(week)*5; % cost of warehouse cost 5 gold per unit per weekend
+        
+                 %for next week order
+                if total_apple(week)<=r % check you are under stock level or not
+                    total_apple(week+1)=total_apple(week)+y; %if under order y apple for next week
+                end
+            end
+            
+            cost=cost+total_apple(53)*10-total_apple(53)*5;%(last week we dont have warehouse cost but we have return cost )
+            total(i,:)=[cost y r]; % all possibles total matrix until the end of the 52 week
+            i=i+1;% for second row index
+        end
+    end
+    [value,min_row_number]=min(total(:,1));% for taking the smalest cost
+    %Finding min cost value's row and column
+    [Value_row_number, I_col] = ind2sub(size(total),min_row_number); 
+    %Creating all minimum cost for 500 estimates
+    Monte_total(estimates,:)=total(Value_row_number,:); 
+    %Finding y and r value which gives min cost value
+    total(Value_row_number,:);
+    
+end
+
+Z=2.58; % confidence level 99%
+%********************************************COST**************************
+Standard_deviation_cost=std(Monte_total(:,1));% variance of 500 estimation for min cost
+Mean_minimum_cost=mean(Monte_total(:,1));% mean of 500 estimation for min cost
+lower_bound_cost=Mean_minimum_cost-Z*Standard_deviation_cost/sqrt(500);%lower bound
+upper_bound_cost=Mean_minimum_cost+Z*Standard_deviation_cost/sqrt(500);%upper bound
+
+%*******************************************STOCK**************************
+Standard_stock=std(Monte_total(:,3));% variance of 500 estimation for stock level
+Mean_stock=mean(Monte_total(:,3));% mean of 500 estimation for stock level
+Stock_lower_bound=Mean_stock-Z*Standard_stock/sqrt(500);%lower bound
+Stock_upper_bound=Mean_stock+Z*Standard_stock/sqrt(500);%upper bound
+Mean_stock=round(Mean_stock);
+Standard_stock=round(Standard_stock);
+Stock_lower_bound=round(Stock_lower_bound);
+Stock_upper_bound=round(Stock_upper_bound);
+
+%*******************************************ORDER**************************
+Standard_order=std(Monte_total(:,2));% variance of 500 estimation for order number
+Mean_order=mean(Monte_total(:,2));% mean of 500 estimation for order number
+lower_bound_order=Mean_order-Z*Standard_order/sqrt(500);%lower bound
+upper_bound_order=Mean_order+Z*Standard_order/sqrt(500);%upper bound
+Mean_order=round(Mean_order);
+Standard_order=round(Standard_order);
+lower_bound_order=round(lower_bound_order);
+upper_bound_order=round(upper_bound_order);
+
+%*******************************************TABLE**************************
+Variables = {'ORDER NUMBER';'STOCK NUMBER';'MINIMUM COST'};
+
+confidence_level = '99%';
+
+CONFIDENCE_LEVELS = [confidence_level; confidence_level; confidence_level];
+MEANS = [Mean_order;Mean_stock;Mean_minimum_cost];
+STANDART_DERIVATIONS = [Standard_order; Standard_stock; Standard_deviation_cost];
+UPPER_BOUNDS = [upper_bound_order;Stock_upper_bound;upper_bound_cost];
+LOWER_BOUNDS = [lower_bound_order;Stock_lower_bound;lower_bound_cost];
+
+RESULTS = table(MEANS,STANDART_DERIVATIONS,CONFIDENCE_LEVELS,LOWER_BOUNDS,UPPER_BOUNDS,'RowNames',Variables); % create table to show all results
+display(RESULTS)
+
+%Absolute vector of mean and total cost
+min_dis_abs_value =abs(Mean_minimum_cost-(Monte_total(:,1)));
+%Find the min vector value
+[xx,row_1]=min(min_dis_abs_value(:,1));
+%State row and column
+[row_2, col_2] = ind2sub(size(min_dis_abs_value),row_1);
+%Find the suitable y r and cost according to our result
+Result=Monte_total(row_2,:); 
+disp(' RECOMENDED VALUES:   ')
+disp('  cost     y     r     ')
+disp(Result);
